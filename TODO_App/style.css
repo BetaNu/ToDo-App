@@ -14,6 +14,15 @@ body{
     justify-content: center;
 }
 
+body.light-mode{
+    font-family: 'Josefin Sans',
+    sans-serif;
+    background-color: hsl(0, 0%, 100%);
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+}
+
 /*Coller l'image de fond en haut et l'étirer pour qu'elle colle à gauche et à droite de l'écran*/
 .background-image {
     position: absolute;
@@ -51,6 +60,10 @@ body{
     font-size: 50px;
     font-weight: bold;
     letter-spacing: 10px;
+}
+
+.theme {
+    cursor: pointer;
 }
 
 .new-item {

@@ -19,6 +19,7 @@ function getItems() {
             items.push(item);
         });
         generateItems(items);
+        generateItemsLeft(items);
     })
 }
 
@@ -28,11 +29,11 @@ function generateItems(items){
         itemsHTML += `
             <div class="todo-item">
                 <div class="check">
-                    <div data-id="${item.id}" class="check-mark ${item.status == "completed" ? "checked" : ""}">
+                    <div data-id="${item.id}" class="check-mark ${item.status == "completed" ? "checked" : "not-checked"}">
                         <img src="./assets/icon-check.svg" alt="check">
                      </div>
                 </div>
-                <div class="item-text ${item.status == "completed" ? "checked" : ""}">
+                <div class="item-text ${item.status == "completed" ? "checked" : "not-checked"}">
                      ${item.text}
                 </div>
             </div>
@@ -41,6 +42,8 @@ function generateItems(items){
 
     document.querySelector(".items").innerHTML = itemsHTML;
     createEventListeners();
+    selectEventListener();
+    filter(document.querySelector(".items-statuses span.active").innerHTML);
 }
 
 function createEventListeners() {
@@ -55,7 +58,7 @@ function createEventListeners() {
 function markCompleted(id) {
     //Depuis la base de données
     let item = database.collection("todo-items").doc(id);
-
+     
     item.get().then(function(doc){
         if(doc){
             let status = doc.data().status;
@@ -72,4 +75,89 @@ function markCompleted(id) {
     })
 }
 
+function selectEventListener() {
+    let selectToDo = document.querySelectorAll(".items-statuses span");
+    selectToDo.forEach((select) => {
+        select.addEventListener("click", function() {
+            selectFilter(select);
+        })
+    })
+}
+
+function selectFilter(select) {
+    desactiveFilter();
+    select.className = "active";
+    filter(select.innerText);
+}
+
+function desactiveFilter() {
+    let activeSelect = document.querySelector(".items-statuses span.active");
+    activeSelect.className = "";
+}
+
+
+function filter(filter) {
+    let items = document.querySelectorAll(".items .todo-item");
+    items.forEach((item) => {
+        item.style.display="flex";
+    })
+    switch (filter) {
+        case 'All':
+            break;
+            case 'Active':
+                items.forEach((item) => {
+                    if(item.children[1].classList.contains("checked")){
+                        item.style.display="none";
+                    }
+                })
+                break;
+                case 'Completed':
+                    items.forEach((item) => {
+                        if(item.children[1].classList.contains("not-checked")){
+                            item.style.display="none";
+                        }
+                    })
+                    break;
+                    default:
+                        break;
+                    }
+                }
+
+function generateItemsLeft(items){
+    document.querySelector(".items-left").innerHTML = `${items.length} items left`;
+}
+
+function deleteCompleted(){
+    let collection = database.collection("todo-items");
+    let itemToDelete = collection.where("status", "==", "completed")
+    .get()
+    .then((snapshot) => {
+        snapshot.forEach((doc) => {
+            let id = doc.id;
+            collection.doc(id).delete().then(() => {
+                console.log("Document successfully deleted!");
+            }).catch((error) => {
+                console.error("Error removing document: ", error);
+            });
+        });
+    })
+    .catch((error) => {
+        console.log("Error getting documents: ", error);
+    });
+}
+
+function changeTheme() {
+    let div = document.querySelector(".theme");
+    if(div.innerHTML.includes("Dark mode")){
+        div.innerHTML = `<img src="./assets/icon-moon.svg" alt="Light mode">`;
+        document.querySelector("body").className = "light-mode";
+    }
+    else if(div.innerHTML.includes("Light mode")){
+        div.innerHTML = `<img src="./assets/icon-sun.svg" alt="Dark mode">`;
+        document.querySelector("body").className = "";
+    }
+}
+                
 getItems();
+                
+                
